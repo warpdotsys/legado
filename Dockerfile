@@ -29,23 +29,16 @@ COPY proxy_error.html /usr/share/nginx/html/proxy_error.html
 # Copy Nginx configuration
 COPY nginx.conf /etc/nginx/http.d/default.conf
 
-# Copy Gradle configurations first to leverage Docker layer cache for dependencies
-COPY gradlew ./
-COPY gradle/ ./gradle/
-COPY build.gradle settings.gradle gradle.properties ./
-COPY modules/book/build.gradle ./modules/book/
-COPY modules/rhino/build.gradle ./modules/rhino/
-COPY app/build.gradle ./app/
+# Copy all source files
+COPY . .
 
 # Optimize Gradle and Maven downloads for China region by using local mirrors
+# This must be run after COPY . . to prevent host files from overwriting the mirror settings.
 RUN sed -i 's|services.gradle.org/distributions|mirrors.cloud.tencent.com/gradle|g' gradle/wrapper/gradle-wrapper.properties && \
     sed -i 's|//maven { url|maven { url|g' settings.gradle
 
 # Warm up Gradle cache (download Gradle distribution via Tencent mirror)
 RUN ./gradlew --version --no-daemon
-
-# Copy all source files
-COPY . .
 
 # Run test compile to download all compiler, JVM, and Robolectric dependencies during image build
 RUN ./gradlew :app:compileDebugUnitTestSources --no-daemon

@@ -5,6 +5,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      network: host
     container_name: legado-web
     restart: unless-stopped
     ports:

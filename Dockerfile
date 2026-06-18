@@ -1,33 +1,61 @@
-# Build Stage for Vue Web UI
-FROM node:20-alpine AS build
+# --- Stage 1: Build Vue Web UI ---
+FROM node:20-alpine AS build-ui
 
 # Install pnpm
 RUN npm install -g pnpm@9
 
 WORKDIR /app/modules/web
 
-# Copy package.json first to leverage Docker cache
+# Copy package.json to leverage Docker cache
 COPY modules/web/package.json ./
-
-# Install dependencies
 RUN pnpm install
 
 # Copy source code and build Vue app
 COPY modules/web/ ./
 RUN pnpm run build
 
-# Production Stage
-FROM nginx:alpine
+# --- Stage 2: JVM Backend & Nginx Web Server ---
+FROM eclipse-temurin:17-jdk-alpine
 
-# Copy nginx config template (will be processed by envsubst to conf.d/default.conf at runtime)
-COPY nginx.conf.template /etc/nginx/templates/default.conf.template
+# Install Nginx and other requirements
+RUN apk add --no-cache nginx bash
 
-# Copy built Vue Web UI assets directly to Nginx static root for full-screen UI
-COPY --from=build /app/modules/web/dist /usr/share/nginx/html
+WORKDIR /app
 
-# Copy fallback error page
+# Copy built Vue Web UI assets to Nginx static root
+COPY --from=build-ui /app/modules/web/dist /usr/share/nginx/html
 COPY proxy_error.html /usr/share/nginx/html/proxy_error.html
 
+# Copy Nginx configuration
+COPY nginx.conf /etc/nginx/http.d/default.conf
+
+# Copy Gradle configurations first to leverage Docker layer cache for dependencies
+COPY gradlew ./
+COPY gradle/ ./gradle/
+COPY build.gradle settings.gradle gradle.properties ./
+COPY modules/book/build.gradle ./modules/book/
+COPY modules/rhino/build.gradle ./modules/rhino/
+COPY app/build.gradle ./app/
+
+# Warm up Gradle cache (download Gradle distribution)
+RUN ./gradlew --version --no-daemon
+
+# Copy all source files
+COPY . .
+
+# Run test compile to download all compiler, JVM, and Robolectric dependencies during image build
+RUN ./gradlew :app:compileDebugUnitTestSources --no-daemon
+
+# Make entrypoint script executable
+RUN chmod +x /app/entrypoint.sh
+
+# Expose ports
+# 4080: Vue Web UI (Full screen)
+# 4081: Legado Web API (Mapped to Port 1122 backend)
+# 4082: WebSocket Proxy (Mapped to Port 1123 backend)
 EXPOSE 4080 4081 4082
 
-CMD ["nginx", "-g", "daemon off;"]
+# Define storage directory for Room database persistence
+VOLUME ["/storage"]
+
+ENTRYPOINT ["/app/entrypoint.sh"]

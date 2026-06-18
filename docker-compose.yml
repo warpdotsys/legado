@@ -9,8 +9,7 @@ services:
     restart: unless-stopped
     ports:
       - "4080:4080" # Full-screen Vue Web UI
-      - "4081:4081" # Transparent HTTP proxy to App (1122)
-      - "4082:4082" # Transparent WebSocket proxy to App (1123)
-    environment:
-      - BACKEND_URL=http://192.168.1.100:1122
-      - BACKEND_WS_URL=http://192.168.1.100:1123
+      - "4081:4081" # Transparent HTTP proxy to JVM WebService (1122)
+      - "4082:4082" # Transparent WebSocket proxy to JVM WebSocketServer (1123)
+    volumes:
+      - ./storage:/storage # Persistent volume for Room database file

@@ -58,7 +58,14 @@ import splitties.init.appCtx
 import java.util.Locale
 
 val appDb by lazy {
-    Room.databaseBuilder(appCtx, AppDatabase::class.java, AppDatabase.DATABASE_NAME)
+    val dbFile = if (System.getProperty("robolectric.active") != null) {
+        val dbDir = java.io.File(System.getProperty("legado.db.dir", "/storage"))
+        if (!dbDir.exists()) dbDir.mkdirs()
+        java.io.File(dbDir, AppDatabase.DATABASE_NAME).absolutePath
+    } else {
+        AppDatabase.DATABASE_NAME
+    }
+    Room.databaseBuilder(appCtx, AppDatabase::class.java, dbFile)
         .fallbackToDestructiveMigrationFrom(false, 1, 2, 3, 4, 5, 6, 7, 8, 9)
         .addMigrations(*DatabaseMigrations.migrations)
         .allowMainThreadQueries()

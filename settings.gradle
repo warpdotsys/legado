@@ -1,15 +1,13 @@
 pluginManagement {
     repositories {
-        // 镜像仓库 (国内加速，优先读取)
-        maven { url 'https://maven.aliyun.com/repository/google' }
-        maven { url 'https://maven.aliyun.com/repository/public' }
-        maven { url 'https://maven.aliyun.com/repository/gradle-plugin' }
-        maven { url 'https://repo.huaweicloud.com/repository/maven/' }
-        maven { url "https://maven-central-asia.storage-download.googleapis.com/maven2/" }
-
-        // google() without content filter — allows mirrors to serve com.google.* artifacts
-        // that Aliyun hasn't synced (e.g. KSP 2.3.4)
-        google()
+        google {
+            content {
+                includeGroupByRegex("com\\.android.*")
+                includeGroupByRegex("com\\.google.*")
+                includeGroupByRegex("androidx.*")
+            }
+        }
+        //原仓库
         gradlePluginPortal()
         mavenCentral()
     }
@@ -18,14 +16,14 @@ pluginManagement {
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
-        // 镜像仓库 (国内加速，优先读取)
-        maven { url 'https://maven.aliyun.com/repository/google' }
-        maven { url 'https://maven.aliyun.com/repository/public' }
-        maven { url 'https://repo.huaweicloud.com/repository/maven/' }
-        maven { url "https://maven-central-asia.storage-download.googleapis.com/maven2/" }
-
-        // google() without content filter
-        google()
+        //原仓库
+        google {
+            content {
+                includeGroupByRegex("com\\.android.*")
+                includeGroupByRegex("com\\.google.*")
+                includeGroupByRegex("androidx.*")
+            }
+        }
         maven {
             url = 'https://jitpack.io'
             content {

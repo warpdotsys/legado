@@ -32,11 +32,7 @@ COPY nginx.conf /etc/nginx/http.d/default.conf
 # Copy all source files
 COPY . .
 
-# Optimize Gradle and Maven downloads for China region by using local mirrors
-# This must be run after COPY . . to prevent host files from overwriting the mirror settings.
-RUN sed -i 's|services.gradle.org/distributions|mirrors.cloud.tencent.com/gradle|g' gradle/wrapper/gradle-wrapper.properties
-
-# Warm up Gradle cache (download Gradle distribution via Tencent mirror)
+# Warm up Gradle cache (download Gradle distribution)
 RUN ./gradlew --version --no-daemon
 
 # Run test compile to download all compiler, JVM, and Robolectric dependencies during image build

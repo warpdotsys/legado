@@ -37,7 +37,11 @@ COPY modules/book/build.gradle ./modules/book/
 COPY modules/rhino/build.gradle ./modules/rhino/
 COPY app/build.gradle ./app/
 
-# Warm up Gradle cache (download Gradle distribution)
+# Optimize Gradle and Maven downloads for China region by using local mirrors
+RUN sed -i 's|services.gradle.org/distributions|mirrors.cloud.tencent.com/gradle|g' gradle/wrapper/gradle-wrapper.properties && \
+    sed -i 's|//maven { url|maven { url|g' settings.gradle
+
+# Warm up Gradle cache (download Gradle distribution via Tencent mirror)
 RUN ./gradlew --version --no-daemon
 
 # Copy all source files

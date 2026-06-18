@@ -18,7 +18,7 @@ RUN pnpm run build
 FROM eclipse-temurin:17-jdk-alpine
 
 # Install Nginx and other requirements
-RUN apk add --no-cache nginx bash
+RUN apk add --no-cache nginx bash git
 
 WORKDIR /app
 

@@ -22,6 +22,8 @@ RUN apk add --no-cache nginx bash git
 
 WORKDIR /app
 
+ENV GRADLE_OPTS="-Djava.net.preferIPv4Stack=true"
+
 # Copy built Vue Web UI assets to Nginx static root
 COPY --from=build-ui /app/modules/web/dist /usr/share/nginx/html
 COPY proxy_error.html /usr/share/nginx/html/proxy_error.html
